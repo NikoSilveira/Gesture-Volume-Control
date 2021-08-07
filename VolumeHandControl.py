@@ -73,6 +73,6 @@ while True:
     prev_Time = current_Time
     cv2.putText(img, 'FPS: '+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 1.4, (255,60,0), 2) #display in window
 
-    cv2.imshow("Image", img)
+    cv2.imshow("Volume Hand Control (press Q to shutdown)", img)
     if cv2.waitKey(1) == ord('q'): #shut down with q
         break
