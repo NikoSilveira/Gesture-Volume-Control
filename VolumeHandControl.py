@@ -23,6 +23,9 @@ volume = cast(interface, POINTER(IAudioEndpointVolume))
 
 volume_range = volume.GetVolumeRange()
 min_volume, max_volume = volume_range[0], volume_range[1] #-45, 0; check with print
+vol = 0
+bar_vol = 400
+vol_percentage = 0
 
 
 prev_Time = 0
@@ -49,17 +52,26 @@ while True:
         line_length = math.hypot(x8-x4, y8-y4)
 
         #Volume control
-        vol = np.interp(line_length, [50,300], [min_volume, max_volume]) #Convert from line range to vol range (MODIFY SENSITIVITY HERE)
+        max_sensitivity = 240 #MODIFY SENS HERE
+
+        vol = np.interp(line_length, [50,max_sensitivity], [min_volume, max_volume])    #Convert from line range to vol range
+        bar_vol = np.interp(line_length, [50,max_sensitivity], [400, 150])              #Convert from vol range to bar range
+        vol_percentage = np.interp(line_length, [50,max_sensitivity], [0, 100])         #Convert from bar range to % range
         volume.SetMasterVolumeLevel(vol, None)
         
         if line_length < 50:
-            cv2.circle(img, (center_x,center_y), 8, (0,255,0), cv2.FILLED) #change center color at min range
+            cv2.circle(img, (center_x,center_y), 8, (0,0,255), cv2.FILLED) #change center color at min range
+
+    #Show dynamic volume bar
+    cv2.rectangle(img, (40,150), (60,400), (255,60,0), 3)
+    cv2.rectangle(img, (40,int(bar_vol)), (60,400), (255,60,0), cv2.FILLED)
+    cv2.putText(img, str(int(vol_percentage))+'%', (30,450), cv2.FONT_HERSHEY_PLAIN, 1.4, (255,60,0), 2) #display in window
 
     #FPS
     current_Time = time.time()
     fps = 1/(current_Time - prev_Time)
     prev_Time = current_Time
-    cv2.putText(img, 'FPS: '+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 1.4, (255,0,255), 2) #display in window
+    cv2.putText(img, 'FPS: '+str(int(fps)), (10,30), cv2.FONT_HERSHEY_PLAIN, 1.4, (255,60,0), 2) #display in window
 
     cv2.imshow("Image", img)
     if cv2.waitKey(1) == ord('q'): #shut down with q
