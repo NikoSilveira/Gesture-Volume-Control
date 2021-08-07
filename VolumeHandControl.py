@@ -2,6 +2,7 @@ import cv2
 import time
 import numpy as np
 import HandTrackingModule as htm
+import math
 
 #### Parameters ####
 cam_width, cam_height = 640, 480
@@ -20,8 +21,23 @@ while True:
     detector.findHands(img)
     lm_list = detector.findPosition(img)
 
+    #Handling of desired landmarks - tip of index (8) and tip of thumb (4)
     if len(lm_list) != 0:
-        print(lm_list[4], lm_list[8]) #Tip of index (4) and thumb (8)
+        x4, y4 = lm_list[4][1], lm_list[4][2]
+        x8, y8 = lm_list[8][1], lm_list[8][2]
+        center_x, center_y = (x4+x8)//2, (y4+y8)//2
+
+        #Custom drawing
+        cv2.circle(img, (x4,y4), 10, (255,0,255), cv2.FILLED)
+        cv2.circle(img, (x8,y8), 10, (255,0,255), cv2.FILLED)
+        cv2.line(img, (x4,y4), (x8,y8), (255,0,255), 3)
+        cv2.circle(img, (center_x,center_y), 8, (255,40,160), cv2.FILLED)
+
+        #Line length variations
+        line_length = math.hypot(x8-x4, y8-y4)
+        
+        if line_length < 50:
+            cv2.circle(img, (center_x,center_y), 8, (0,255,0), cv2.FILLED)
 
     #FPS
     current_Time = time.time()
